@@ -29,7 +29,7 @@ def pop_functionops(outq: deque, stack: []):
     return out, opstack
 
 def check_parenthesis(outq: deque, stack: [], value):
-    """Handle function argument separators"""
+    """Handle function argument separators."""
     out = outq
     opstack = stack
     o1 = value
@@ -43,7 +43,7 @@ def check_parenthesis(outq: deque, stack: [], value):
 ############### Parse operator stack ###############
 
 def pop_operatorstack(outq: deque, stack: [], op1, op2):
-    """Add operators to the outputq depending on precedence"""
+    """Add operators to the output queue depending on precedence."""
     out = outq
     opstack = stack
     o1 = op1
@@ -51,7 +51,7 @@ def pop_operatorstack(outq: deque, stack: [], op1, op2):
 
     def precedence(a, b):
         return ((ops[a] < 4) and (ops[a] <= ops[b])) or (ops[a] < ops[b])
-    
+
     while o2 in ops:
         if not precedence(o1, o2):
             opstack.append(o2)
@@ -66,7 +66,7 @@ def pop_operatorstack(outq: deque, stack: [], op1, op2):
 
 
 def check_operatorstack(outq: deque, stack: [], value):
-    """Check precedence of operator found and stack operator"""
+    """Check precedence of current operator token and stack operator."""
     out = outq
     opstack = stack
     o1 = value
@@ -80,15 +80,13 @@ def check_operatorstack(outq: deque, stack: [], value):
     opstack.append(o1)
     return out, opstack
 
-############### Digit error checking ###############
+############### Number error checking ###############
 
 def check_number(value):
     """Check that the number is valid. (we support negative numbers)"""
-    if len(value) < 2:
-        return value.isdigit()
-    elif len(value) == 2:
-        return list(value)[0] == "-" and list(value)[1].isdigit()
-    return False
+    o1 = value
+    if len(o1) < 2: return o1.isdigit()
+    return o1[0] == '-' or o1[0].isdigit() and o1[1:].isdigit()
 
 ############### Parse the infix expression ###############
 
@@ -115,7 +113,7 @@ def parse_infix(expr):
 ############### Parser test ###############
 
 def main():
-    """Send an infix expression to parser"""
+    """Send an infix expression to parser."""
     infix = "3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3"
     print(parse_infix(infix))
     
