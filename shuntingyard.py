@@ -57,7 +57,7 @@ def pop_operatorstack(outq: deque, stack: [], op1, op2):
             opstack.append(o2)
             break
         out.append(o2)
-        if len(opstack) < 0:
+        if len(opstack) > 0:
             o2 = opstack.pop()
             continue
         break
