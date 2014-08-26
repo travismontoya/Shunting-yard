@@ -23,7 +23,7 @@ def pop_functionops(outq: deque, stack: []):
 
     while len(opstack) > 0:
         op = opstack.pop()
-        if op == "(":
+        if op == special[0]:
             break
         out.append(op)
     return out, opstack
@@ -34,12 +34,11 @@ def check_parenthesis(outq: deque, stack: [], value):
     opstack = stack
     o1 = value
 
-    if o1 == "(":
+    if o1 == special[0]:
         opstack.append(o1)
         return out, opstack
-    elif o1 == ")":
+    elif o1 == special[1]:
         return pop_functionops(out, opstack)
-    #return out, opstack
 
 ############### Parse operator stack ###############
 
@@ -50,20 +49,19 @@ def pop_operatorstack(outq: deque, stack: [], op1, op2):
     o1 = op1
     o2 = op2
 
-    def precedence(a,b):
+    def precedence(a, b):
         """Check precedence of o1 to o2"""
         return ((ops[a] < 4) and (ops[a] <= ops[b])) or (ops[a] < ops[b])
 
     while o2 in ops:
-        if precedence(o1, o2):
-            out.append(o2)
-        else:
+        if not precedence(o1, o2):
             opstack.append(o2)
             break
-        if len(opstack) > 0:
+        out.append(o2)
+        if len(opstack) < 0:
             o2 = opstack.pop()
-        else:
-            break
+            continue
+        break
     opstack.append(o1)
     return out, opstack
 
@@ -77,8 +75,7 @@ def check_operatorstack(outq: deque, stack: [], value):
     if len(opstack) > 0:
         o2 = opstack.pop()
         if o2 not in ops:
-            opstack.append(o2)
-            opstack.append(o1)
+            opstack.extend((o2, o1))
             return out, opstack
         return pop_operatorstack(out, opstack, o1, o2)
     opstack.append(o1)
@@ -102,7 +99,7 @@ def parse_infix(expr):
     stack = []
     tokens = expr.split(" ")
 
-    if len(tokens) < 3: return "Error"
+    if len(tokens) < 3: return "Invalid infix notation."
 
     for o1 in tokens:
         if o1 in special:
