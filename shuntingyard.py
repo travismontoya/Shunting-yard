@@ -83,9 +83,7 @@ def parse(expr):
 ################################################################################
 def main():
     infix_wiki = "3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3"
-    infix_2 = "( 5 + 3 ) * 12 / 3"
-    infix_1 = "( 12 + 33 ) / 4 + 1"
-    infix_0 = "2 + 2"
+    infix      = "2 + 2"
     postfix = parse(infix_wiki)
     print(postfix)
     
