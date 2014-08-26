@@ -6,76 +6,125 @@
 ################################################################################
 from collections import deque
 
-def parse(expr):
-    """
-    This function parses an infix expression into Reverse Polish Notation.
-    :param expr: An infix notation string
-    :return: An RPN string
-    """
-    outq  = deque()
-    stack = []
-    ops   = { '^': 4,
-              '*': 3,
-              '/': 3,
-              '+': 2,
-              '-': 2
-             }
+special = ["(", ")"]
+ops = { '^': 4,
+        '*': 3,
+        '/': 3,
+        '+': 2,
+        '-': 2
+      }
 
+############### Handle function operators ###############
+
+def pop_functionops(outq: deque, stack: []):
+    """Pop items off the stack and onto output queue until we find matching parenthesis."""
+    out = outq
+    opstack = stack
+
+    while len(opstack) > 0:
+        op = opstack.pop()
+        if op == "(":
+            break
+        out.append(op)
+    return out, opstack
+
+def check_parenthesis(outq: deque, stack: [], value):
+    """Handle function argument separators"""
+    out = outq
+    opstack = stack
+    o1 = value
+
+    if o1 == "(":
+        opstack.append(o1)
+        return out, opstack
+    elif o1 == ")":
+        return pop_functionops(out, opstack)
+    #return out, opstack
+
+############### Parse operator stack ###############
+
+def pop_operatorstack(outq: deque, stack: [], op1, op2):
+    """Add operators to the outputq depending on precedence"""
+    out = outq
+    opstack = stack
+    o1 = op1
+    o2 = op2
+
+    def precedence(a,b):
+        """Check precedence of o1 to o2"""
+        return ((ops[a] < 4) and (ops[a] <= ops[b])) or (ops[a] < ops[b])
+
+    while o2 in ops:
+        if precedence(o1, o2):
+            out.append(o2)
+        else:
+            opstack.append(o2)
+            break
+        if len(opstack) > 0:
+            o2 = opstack.pop()
+        else:
+            break
+    opstack.append(o1)
+    return out, opstack
+
+
+def check_operatorstack(outq: deque, stack: [], value):
+    """Check precedence of operator found and stack operator"""
+    out = outq
+    opstack = stack
+    o1 = value
+
+    if len(opstack) > 0:
+        o2 = opstack.pop()
+        if o2 not in ops:
+            opstack.append(o2)
+            opstack.append(o1)
+            return out, opstack
+        return pop_operatorstack(out, opstack, o1, o2)
+    opstack.append(o1)
+    return out, opstack
+
+############### Digit error checking ###############
+
+def check_number(value):
+    """Check that the number is valid. (we support negative numbers)"""
+    if len(value) < 2:
+        return value.isdigit()
+    elif len(value) == 2:
+        return list(value)[0] == "-" and list(value)[1].isdigit()
+    return False
+
+############### Parse the infix expression ###############
+
+def parse_infix(expr):
+    """Parse an infix expression into reverse polish notation."""
+    outputq = deque()
+    stack = []
     tokens = expr.split(" ")
-    if len(tokens) < 3:
-        return "Error"
+
+    if len(tokens) < 3: return "Error"
 
     for o1 in tokens:
-        # -- Handle Parenthesis
-        if o1 == "(":
-            stack.append(o1)
-        elif o1 == ")":
-            par = None
-            while len(stack) > 0:
-                par = stack.pop()
-                if par == "(":
-                    break
-                outq.append(par)
-            if not par:
-                stack.append(par)
-        # -- Handle Operators, Check if they "are" an operator, etc..
+        if o1 in special:
+            outputq, stack = check_parenthesis(outputq, stack, o1)
+            continue
         elif o1 in ops:
-            if len(stack) > 0:
-                o2 = stack.pop()
-                if o2 not in ops:
-                    stack.append(o2)
-                    stack.append(o1)
-                    continue
-                # While there is an operator on the stack check its precedence
-                while o2 in ops:
-                    if not (not ((ops[o1] < 4) and (ops[o1] <= ops[o2])) and
-                       not (ops[o1] < ops[o2])):
-                        outq.append(o2)
-                    else:
-                        stack.append(o2)
-                        break
-                    if len(stack) > 0:
-                        o2 = stack.pop()
-                    else:
-                        break
-            stack.append(o1)
-        # -- Only numbers should be appended here
-        else:
-            outq.append(o1)
+            outputq, stack = check_operatorstack(outputq, stack, o1)
+            continue
+        if not check_number(o1): return "Invalid infix notation."
+        outputq.append(o1)
 
-    # -- Tokens are done, reverse and pop entire stack and return RPN string
     stack.reverse()
-    [outq.append(op) for op in stack]
-    return ' '.join(outq)
+    [outputq.append(op) for op in stack]
+    return ' '.join(outputq)
+
+############### Parser test ###############
 
 def main():
-    """
-    Main is just a test to see the RPN output from the parser.
-    Unit tests are in test_parse.py
-    """
+    """Send an infix expression to parser"""
     infix = "3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3"
     #infix = "2 + 2"
-    print(parse(infix))
+    print(parse_infix(infix))
     
 if __name__ == "__main__":
     main()
