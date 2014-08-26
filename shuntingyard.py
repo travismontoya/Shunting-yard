@@ -64,7 +64,6 @@ def pop_operatorstack(outq: deque, stack: [], op1, op2):
     opstack.append(o1)
     return out, opstack
 
-
 def check_operatorstack(outq: deque, stack: [], value):
     """Check precedence of current operator token and stack operator."""
     out = outq
@@ -90,11 +89,11 @@ def check_number(value):
 
 ############### Parse the infix expression ###############
 
-def parse_infix(expr):
+def parse_infix(expression):
     """Parse an infix expression into reverse polish notation."""
     outputq = deque()
     stack = []
-    tokens = expr.split(" ")
+    tokens = expression.split(" ")
 
     if len(tokens) < 3: return "Invalid infix notation."
     for o1 in tokens:

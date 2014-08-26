@@ -1,4 +1,5 @@
 Shunting-yard
 =============
 
-Implementation of the Shunting-yard algorithm
+Implementation of the Shunting-yard algorithm.
+
