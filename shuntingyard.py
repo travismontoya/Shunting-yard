@@ -50,9 +50,8 @@ def pop_operatorstack(outq: deque, stack: [], op1, op2):
     o2 = op2
 
     def precedence(a, b):
-        """Check precedence of o1 to o2"""
         return ((ops[a] < 4) and (ops[a] <= ops[b])) or (ops[a] < ops[b])
-
+    
     while o2 in ops:
         if not precedence(o1, o2):
             opstack.append(o2)
@@ -100,7 +99,6 @@ def parse_infix(expr):
     tokens = expr.split(" ")
 
     if len(tokens) < 3: return "Invalid infix notation."
-
     for o1 in tokens:
         if o1 in special:
             outputq, stack = check_parenthesis(outputq, stack, o1)
@@ -110,7 +108,6 @@ def parse_infix(expr):
             continue
         if not check_number(o1): return "Invalid infix notation."
         outputq.append(o1)
-
     stack.reverse()
     [outputq.append(op) for op in stack]
     return ' '.join(outputq)
@@ -120,7 +117,6 @@ def parse_infix(expr):
 def main():
     """Send an infix expression to parser"""
     infix = "3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3"
-    #infix = "2 + 2"
     print(parse_infix(infix))
     
 if __name__ == "__main__":
