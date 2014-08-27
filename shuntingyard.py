@@ -15,14 +15,13 @@
 ################################################################################
 from collections import deque
 
-error = "Invalid infix notation."
+error   = "Invalid infix notation."
 special = ["(", ")"]
-ops = { '^': 4,
-        '*': 3,
-        '/': 3,
-        '+': 2,
-        '-': 2
-      }
+ops     = {'^': 4,
+           '*': 3,
+           '/': 3,
+           '+': 2,
+           '-': 2}
 
 ############### Handle function operators ###############
 
