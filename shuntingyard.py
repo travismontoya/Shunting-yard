@@ -4,8 +4,18 @@
 #
 # (C) Copyright 2014 Travis Montoya
 ################################################################################
+################################################################################
+# error   :  Error string for the user.
+# special :  A list of function operators
+# ops     :  Dictionary of operators and their precedence.
+# outq    :  Output queue which holds the final RPN string
+# stack   :  A list that holds the operator stack.
+# o1      :  Token from the expression string.
+# o2      :  Operator from the operator stack.
+################################################################################
 from collections import deque
 
+error = "Invalid infix notation."
 special = ["(", ")"]
 ops = { '^': 4,
         '*': 3,
@@ -18,72 +28,55 @@ ops = { '^': 4,
 
 def pop_functionops(outq: deque, stack: []):
     """Pop items off the stack and onto output queue until we find matching parenthesis."""
-    out = outq
-    opstack = stack
-
-    while len(opstack) > 0:
-        op = opstack.pop()
+    while len(stack) > 0:
+        op = stack.pop()
         if op == special[0]:
             break
-        out.append(op)
-    return out, opstack
+        outq.append(op)
+    return outq, stack
 
-def check_parenthesis(outq: deque, stack: [], value):
+def check_parenthesis(outq: deque, stack: [], o1):
     """Handle function argument separators."""
-    out = outq
-    opstack = stack
-    o1 = value
-
     if o1 == special[0]:
-        opstack.append(o1)
-        return out, opstack
+        stack.append(o1)
+        return outq, stack
     elif o1 == special[1]:
-        return pop_functionops(out, opstack)
+        return pop_functionops(outq, stack)
 
 ############### Parse operator stack ###############
 
-def pop_operatorstack(outq: deque, stack: [], op1, op2):
+def pop_operatorstack(outq: deque, stack: [], o1, o2):
     """Add operators to the output queue depending on precedence."""
-    out = outq
-    opstack = stack
-    o1 = op1
-    o2 = op2
-
     def precedence(a, b):
         return ((ops[a] < 4) and (ops[a] <= ops[b])) or (ops[a] < ops[b])
 
     while o2 in ops:
         if not precedence(o1, o2):
-            opstack.append(o2)
+            stack.append(o2)
             break
-        out.append(o2)
-        if len(opstack) > 0:
-            o2 = opstack.pop()
+        outq.append(o2)
+        if len(stack) > 0:
+            o2 = stack.pop()
             continue
         break
-    opstack.append(o1)
-    return out, opstack
+    stack.append(o1)
+    return outq, stack
 
-def check_operatorstack(outq: deque, stack: [], value):
+def check_operatorstack(outq: deque, stack: [], o1):
     """Check precedence of current operator token and stack operator."""
-    out = outq
-    opstack = stack
-    o1 = value
-
-    if len(opstack) > 0:
-        o2 = opstack.pop()
+    if len(stack) > 0:
+        o2 = stack.pop()
         if o2 not in ops:
-            opstack.extend((o2, o1))
-            return out, opstack
-        return pop_operatorstack(out, opstack, o1, o2)
-    opstack.append(o1)
-    return out, opstack
+            stack.extend((o2, o1))
+            return outq, stack
+        return pop_operatorstack(outq, stack, o1, o2)
+    stack.append(o1)
+    return outq, stack
 
 ############### Number error checking ###############
 
-def check_number(value):
+def check_number(o1):
     """Check that the number is valid. (we support negative numbers)"""
-    o1 = value
     if len(o1) < 2: return o1.isdigit()
     return o1[0] == '-' or o1[0].isdigit() and o1[1:].isdigit()
 
@@ -95,7 +88,7 @@ def parse_infix(expression):
     stack = []
     tokens = expression.split(" ")
 
-    if len(tokens) < 3: return "Invalid infix notation."
+    if len(tokens) < 3: return error
     for o1 in tokens:
         if o1 in special:
             outputq, stack = check_parenthesis(outputq, stack, o1)
@@ -103,7 +96,7 @@ def parse_infix(expression):
         elif o1 in ops:
             outputq, stack = check_operatorstack(outputq, stack, o1)
             continue
-        if not check_number(o1): return "Invalid infix notation."
+        if not check_number(o1): return error
         outputq.append(o1)
     stack.reverse()
     [outputq.append(op) for op in stack]
